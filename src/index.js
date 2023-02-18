@@ -12,8 +12,8 @@ const loadMoreBtn = new LoadMoreBtn({
   selector: '.load-more',
   isHidden: true,
 });
-console.log(pixabayApiService);
-console.log(loadMoreBtn);
+// console.log(pixabayApiService);
+// console.log(loadMoreBtn);
 
 form.addEventListener('submit', onSubmit);
 loadMoreBtn.button.addEventListener('click', fetchHits);
@@ -25,6 +25,11 @@ function onSubmit(event) {
   const value = form.elements.searchQuery.value.trim();
   //   console.dir(value);
   pixabayApiService.searchQuery = value;
+
+  if (!pixabayApiService.searchQuery) {
+    form.reset();
+    return;
+  }
 
   pixabayApiService.resetPage();
   clearGallery();
