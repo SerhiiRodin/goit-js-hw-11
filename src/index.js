@@ -1,4 +1,6 @@
 import Notiflix from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 import PixabayApiService from './scripts/PhotoApiService.js';
 import LoadMoreBtn from './scripts/LoadMoreBtn.js';
@@ -11,6 +13,15 @@ const pixabayApiService = new PixabayApiService();
 const loadMoreBtn = new LoadMoreBtn({
   selector: '.load-more',
   isHidden: true,
+});
+
+let lightbox = new SimpleLightbox('.gallery div', {
+  sourceAttr: 'data-src',
+  nav: true,
+  captionsData: 'alt',
+  captionPosition: 'bottom',
+  captionDelay: 250,
+  close: true,
 });
 // console.log(pixabayApiService);
 // console.log(loadMoreBtn);
@@ -39,30 +50,30 @@ function onSubmit(event) {
   // .finally(() => form.reset());
 }
 
-function fetchHits() {
+async function fetchHits() {
   loadMoreBtn.disable();
+  try {
+    const hits = await pixabayApiService.getPhotos();
+    // console.log(hits);
 
-  return pixabayApiService
-    .getPhotos()
-    .then(hits => {
-      if (hits.length === 0) {
-        throw new Error();
-      }
+    if (hits.length === 0) {
+      throw new Error();
+    }
 
-      return hits.reduce((acc, hit) => {
-        return acc + createCardMarkup(hit);
-      }, '');
-    })
-    .then(markup => {
-      appendCardToGallery(markup);
-      loadMoreBtn.enable();
-    })
+    const markup = hits.reduce((acc, hit) => {
+      return acc + createCardMarkup(hit);
+    }, '');
 
-    .catch(noData);
+    appendCardToGallery(markup);
+    loadMoreBtn.enable();
+  } catch {
+    noData();
+  }
 }
 
 function appendCardToGallery(markup) {
   gallery.insertAdjacentHTML('beforeend', markup);
+  lightbox.refresh();
 }
 
 function clearGallery() {
